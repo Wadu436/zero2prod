@@ -24,7 +24,9 @@ async fn subscribe_returns_200_for_valid_data() {
     let address = spawn_app();
     let configuration = configuration::get_configuration().expect("Failed to read configuration");
     let connection_string = configuration.database.connection_string();
-    let mut connection = sqlx::PgConnection::connect(&connection_string).await.expect("Failed to connect to database");
+    let mut connection = sqlx::PgConnection::connect(&connection_string)
+        .await
+        .expect("Failed to connect to database");
 
     let client = reqwest::Client::new();
 
@@ -37,9 +39,20 @@ async fn subscribe_returns_200_for_valid_data() {
         .await
         .expect("Failed to execute request.");
 
-    assert_eq!(200, response.status().as_u16(), "body: {}", response.text().await.expect("couldn't decode response text")); // Check if return code is 200
+    assert_eq!(
+        200,
+        response.status().as_u16(),
+        "body: {}",
+        response
+            .text()
+            .await
+            .expect("couldn't decode response text")
+    ); // Check if return code is 200
 
-    let saved = sqlx::query!("SELECT email, name FROM subscriptions").fetch_one(&mut connection).await.expect("failed to fetch saved subscription");
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions")
+        .fetch_one(&mut connection)
+        .await
+        .expect("failed to fetch saved subscription");
 
     assert_eq!(saved.email, "ursula_le_guin@gmail.com");
     assert_eq!(saved.name, "le guin");
@@ -66,7 +79,11 @@ async fn subscribe_returns_400_for_missing_data() {
             .await
             .expect("Failed to execute request.");
 
-        assert_eq!(400, response.status().as_u16(), "The API did not fail with 400 BAD REQUEST when the payload was {case}"); // Check if return code is 400
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "The API did not fail with 400 BAD REQUEST when the payload was {case}"
+        ); // Check if return code is 400
     }
 }
 
