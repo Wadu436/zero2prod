@@ -15,3 +15,6 @@ format-check:
 
 audit:
     cargo audit
+
+init_db:
+    ./scripts/init_db.sh
