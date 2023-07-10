@@ -25,6 +25,7 @@ sqlx = { version = "0.6.3", features = [
     "migrate",
     "uuid",
     "chrono",
+    "offline"
 ] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 tracing = { version = "0.1.37", features = ["log"] }
