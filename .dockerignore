@@ -1,0 +1,9 @@
+.github
+migrations/
+scripts/
+target/
+tests/
+.env
+.gitignore
+Dockerfile
+Justfile
