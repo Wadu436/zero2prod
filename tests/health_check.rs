@@ -1,8 +1,16 @@
-use std::net::TcpListener;
+use std::{
+    io::{sink, stdout},
+    net::TcpListener,
+    sync::OnceLock,
+};
 
+use secrecy::ExposeSecret;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
-use zero2prod::configuration::{self, DatabaseSettings};
+use zero2prod::{
+    configuration::{self, DatabaseSettings},
+    telemetry::{get_subscriber, init_subscriber},
+};
 
 pub struct TestApp {
     pub address: String,
@@ -88,8 +96,23 @@ async fn subscribe_returns_400_for_missing_data() {
     }
 }
 
+static TRACING: OnceLock<()> = OnceLock::new();
+
 // Spawn the app and return the address it is listening on
 async fn spawn_app() -> TestApp {
+    TRACING.get_or_init(|| {
+        let default_filter_level = "debug".to_owned();
+        let subscriber_name = "test".to_owned();
+
+        if std::env::var("TEST_LOG").is_ok() {
+            let subscriber = get_subscriber(subscriber_name, default_filter_level, stdout);
+            init_subscriber(subscriber);
+        } else {
+            let subscriber = get_subscriber(subscriber_name, default_filter_level, sink);
+            init_subscriber(subscriber);
+        };
+    });
+
     let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind random port");
     let port = listener.local_addr().unwrap().port();
 
@@ -114,16 +137,17 @@ async fn spawn_app() -> TestApp {
 
 async fn configure_database(config: &DatabaseSettings) -> PgPool {
     // Create Database
-    let mut connection = PgConnection::connect(&config.connection_string_without_db())
-        .await
-        .expect("Failed to connect to database");
+    let mut connection =
+        PgConnection::connect(&config.connection_string_without_db().expose_secret())
+            .await
+            .expect("Failed to connect to database");
     connection
         .execute(format!(r#"CREATE DATABASE "{}";"#, config.database_name).as_str())
         .await
         .expect("Failed to create database");
 
     // Migrate Database
-    let connection_pool = sqlx::PgPool::connect(&config.connection_string())
+    let connection_pool = sqlx::PgPool::connect(&config.connection_string().expose_secret())
         .await
         .expect("Failed to connect to database");
     sqlx::migrate!("./migrations")

@@ -1,5 +1,4 @@
-use std::sync::Arc;
-
+use secrecy::{ExposeSecret, Secret, SecretBox};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -11,27 +10,32 @@ pub struct Settings {
 #[derive(Deserialize)]
 pub struct DatabaseSettings {
     pub username: Box<str>,
-    pub password: Box<str>,
+    pub password: SecretBox<str>,
     pub port: u16,
     pub host: Box<str>,
     pub database_name: Box<str>,
 }
 
 impl DatabaseSettings {
-    pub fn connection_string(&self) -> Arc<str> {
-        format!(
+    pub fn connection_string(&self) -> Secret<String> {
+        Secret::new(format!(
             "postgres://{}:{}@{}:{}/{}",
-            self.username, self.password, self.host, self.port, self.database_name
-        )
-        .into()
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port,
+            self.database_name
+        ))
     }
 
-    pub fn connection_string_without_db(&self) -> Arc<str> {
-        format!(
+    pub fn connection_string_without_db(&self) -> Secret<String> {
+        Secret::new(format!(
             "postgres://{}:{}@{}:{}",
-            self.username, self.password, self.host, self.port
-        )
-        .into()
+            self.username,
+            self.password.expose_secret(),
+            self.host,
+            self.port
+        ))
     }
 }
 
