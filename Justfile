@@ -1,6 +1,12 @@
 watch:
     cargo watch -x check -x test -x run
 
+before_commit:
+    cargo sqlx prepare -- --lib
+    just lint
+    just format
+    just audit
+
 lint:
     cargo clippy -- -D warnings
 
