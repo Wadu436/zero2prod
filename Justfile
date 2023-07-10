@@ -3,9 +3,9 @@ watch:
 
 before_commit:
     cargo sqlx prepare -- --lib
+    cargo test
     just lint
     just format
-    just audit
 
 lint:
     cargo clippy -- -D warnings
