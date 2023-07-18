@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  labels:
+    app: zero2prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zero2prod
+  template:
+    metadata:
+      labels:
+        app: zero2prod
+    spec:
+      containers:
+        - name: zero2prod
+          image: ghcr.io/wadu436/zero2prod:main
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-configmap
+            - secretRef:
+                name: {{ .Release.Name }}-secret

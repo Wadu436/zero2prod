@@ -1,0 +1,31 @@
+postgresql:
+  auth:
+    username: zero2prod
+    password: zero2prod
+    database: newsletter
+
+  nameOverride: "postgresql"
+
+  primary:
+    podSecurityContext:
+      enabled: false
+      fsGroup: ""
+    containerSecurityContext:
+      enabled: false
+      runAsUser: "auto"
+
+  readReplicas:
+    podSecurityContext:
+      enabled: false
+      fsGroup: ""
+    containerSecurityContext:
+      enabled: false
+      runAsUser: "auto"
+
+  volumePermissions:
+    enabled: false
+    securityContext:
+      runAsUser: "auto"
+
+application:
+  port: 8000

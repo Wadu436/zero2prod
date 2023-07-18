@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  {{- template "zero2prod.labels" . }}
+data:
+  APP_DATABASE__USERNAME: {{ .Values.postgresql.auth.username }}
+  APP_DATABASE__PORT: "5432"
+  APP_DATABASE__DATABASE_NAME: {{ .Values.postgresql.auth.database }}
+  APP_DATABASE__HOST: {{ .Release.Name }}-{{ .Values.postgresql.nameOverride }}-hl
+  APP_DATABASE__REQUIRE_SSL: "false"
