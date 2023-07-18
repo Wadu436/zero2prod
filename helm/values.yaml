@@ -29,3 +29,7 @@ postgresql:
 
 application:
   port: 8000
+
+image:
+  repository: ghcr.io/wadu436/zero2prod
+  tag: main

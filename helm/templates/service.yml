@@ -4,7 +4,7 @@ metadata:
   name: {{ .Release.Name }}-service
 spec:
   selector:
-    app: zero2prod
+    app: {{ .Release.Name }}
   ports:
     - port: {{ .Values.application.port }}
       targetPort: http

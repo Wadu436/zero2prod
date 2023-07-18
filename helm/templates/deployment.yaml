@@ -3,20 +3,21 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-deployment
   labels:
-    app: zero2prod
+    app: {{ .Release.Name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: zero2prod
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: zero2prod
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: zero2prod
-          image: ghcr.io/wadu436/zero2prod:main
+        - name: {{ .Release.Name }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8000
@@ -26,3 +27,17 @@ spec:
                 name: {{ .Release.Name }}-configmap
             - secretRef:
                 name: {{ .Release.Name }}-secret
+          livenessProbe:
+            httpGet:
+              path: '/health_check'
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: '/health_check'
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            failureThreshold: 10
